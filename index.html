@@ -1,0 +1,944 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>その段取り、通りますか？</title>
+<meta name="description" content="タスクカードを週ごとの予定表に並べてロードマップを作り、クセの強い4人の上司に提出しよう。順番・締め切り・詰めこみ・予備日・予算で採点されて、評価はS〜C。差し戻されたら組み直して再提出！">
+<meta property="og:type" content="website">
+<meta property="og:title" content="その段取り、通りますか？">
+<meta property="og:description" content="タスクカードを週ごとの予定表に並べてロードマップを作り、クセの強い4人の上司に提出しよう。順番・締め切り・詰めこみ・予備日・予算で採点されて、評価はS〜C。差し戻されたら組み直して再提出！">
+<meta property="og:url" content="https://sokora1705-game.github.io/dandori/">
+<meta property="og:image" content="https://sokora1705-game.github.io/dandori/ogp.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="その段取り、通りますか？">
+<meta name="twitter:description" content="タスクカードを週ごとの予定表に並べてロードマップを作り、クセの強い4人の上司に提出しよう。順番・締め切り・詰めこみ・予備日・予算で採点されて、評価はS〜C。差し戻されたら組み直して再提出！">
+<meta name="twitter:image" content="https://sokora1705-game.github.io/dandori/ogp.png">
+<meta name="theme-color" content="#fff7ec">
+<style>
+:root{--bg:#fff7ec;--ink:#3d3346;--sub:#8a7f92;--line:#eadfce;--accent:#ff7a59;--ok:#2fae7a;--ng:#e5484d;--paper:#fffdf8;--warn:#fff1c9}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;background:var(--bg);color:var(--ink);-webkit-tap-highlight-color:transparent;line-height:1.5}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+.screen{display:none;max-width:1000px;margin:0 auto;padding:14px 12px calc(96px + env(safe-area-inset-bottom))}
+.screen.on{display:block}
+
+/* タイトル */
+.logo{text-align:center;padding:18px 0 6px}
+.logo small{display:inline-block;background:var(--ink);color:#fff;border-radius:999px;padding:2px 12px;font-size:.8rem;letter-spacing:.08em}
+.logo h1{font-size:2.1rem;line-height:1.3;margin-top:10px;letter-spacing:.02em}
+.logo h1 span{color:var(--accent)}
+.lead{text-align:center;color:var(--sub);font-size:.9rem;margin-top:6px}
+h2{font-size:1rem;margin:20px 0 8px;display:flex;align-items:center;gap:6px}
+h2::before{content:"";width:6px;height:18px;border-radius:3px;background:var(--accent)}
+.pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.opt{background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 12px;text-align:left;transition:transform .1s}
+.opt:active{transform:scale(.98)}
+.opt.on{border-color:var(--accent);box-shadow:0 0 0 3px rgba(255,122,89,.18)}
+.opt b{display:block;font-size:1rem}
+.opt span{display:block;font-size:.8rem;color:var(--sub);margin-top:2px}
+.pick.bosses{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.opt.boss{display:flex;gap:10px;align-items:center}
+.opt.boss .face{width:58px;flex:none}
+.big{display:block;width:100%;background:var(--accent);color:#fff;font-weight:bold;font-size:1.1rem;border-radius:999px;padding:14px;margin-top:20px;box-shadow:0 4px 0 #d95c3d}
+.big:active{transform:translateY(2px);box-shadow:0 2px 0 #d95c3d}
+.how{margin-top:16px;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 14px;font-size:.88rem}
+.how summary{font-weight:bold;cursor:pointer}
+.how ol{margin:8px 0 2px 1.2em}
+.how li{margin:3px 0}
+
+/* ゲーム画面 */
+.gbar{background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 12px}
+.gbar .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.gbar .ttl{font-weight:bold;font-size:1.05rem}
+.gbar .brief{font-size:.82rem;color:var(--sub)}
+.back{font-size:.8rem;color:var(--sub);border:1.5px solid var(--line);border-radius:999px;padding:2px 10px;white-space:nowrap}
+.stats{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.stat{background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:2px 9px;font-size:.82rem}
+.stat b{font-size:1rem}
+.stat.over{background:#ffe9e9;border-color:#f3b2b4;color:var(--ng)}
+.extra{margin-top:6px;font-size:.82rem;background:var(--warn);border-radius:10px;padding:4px 10px;display:none}
+.extra.on{display:block}
+.bossline{display:flex;align-items:center;gap:8px;margin:10px 0 6px}
+.bossline .face{width:52px;flex:none}
+.hintbub{position:relative;background:#fff;border:2px solid var(--line);border-radius:14px;padding:6px 10px;font-size:.83rem}
+.hintbub::before{content:"";position:absolute;left:-8px;top:50%;margin-top:-6px;border:6px solid transparent;border-right-color:var(--line)}
+
+#boardWrap{overflow-x:auto;overflow-y:hidden;background:var(--paper);border:2px solid var(--line);border-radius:16px;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+#board{position:relative}
+.row{display:flex}
+.lab{position:sticky;left:0;z-index:3;flex:none;background:var(--paper);border-right:2px solid var(--line);font-size:.75rem;font-weight:bold;display:flex;flex-direction:column;justify-content:center;padding:0 6px;line-height:1.2}
+.lab small{font-weight:normal;color:var(--sub);font-size:.65rem}
+.head .lab{font-size:.7rem;color:var(--sub)}
+.wk{flex:none;text-align:center;font-size:.72rem;color:var(--sub);padding:4px 0;border-left:1px dashed var(--line)}
+.wk.dl{color:var(--ng);font-weight:bold;background:#fff0f0}
+.wk.late{background:repeating-linear-gradient(135deg,#f3ece2 0 6px,#ece3d6 6px 12px)}
+.track{position:relative;flex:none;border-top:1px solid var(--line)}
+.lane .lab{border-top:1px solid var(--line)}
+.late-zone{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(135deg,rgba(150,120,90,.07) 0 6px,rgba(150,120,90,.13) 6px 12px);pointer-events:none}
+.dl-line{position:absolute;top:0;bottom:0;width:0;border-left:2.5px solid var(--ng);pointer-events:none;z-index:2}
+
+.card{position:relative;background:#fff;border:2px solid var(--ink);border-radius:10px;font-size:.78rem;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.card.sel{box-shadow:0 0 0 3px var(--accent)}
+.bcard{position:absolute;height:34px;padding:2px 6px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;line-height:1.15;display:flex;flex-direction:column;justify-content:center}
+.bcard b{font-size:.74rem;overflow:hidden;text-overflow:ellipsis}
+.bcard small{font-size:.62rem;opacity:.75}
+.preview{position:absolute;height:34px;border:2.5px dashed var(--accent);border-radius:10px;background:rgba(255,122,89,.12);pointer-events:none;z-index:1}
+#tray{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;min-height:60px;padding:8px;border:2px dashed var(--line);border-radius:16px}
+#tray.hot{border-color:var(--accent);background:rgba(255,122,89,.06)}
+#tray:empty::after{content:"ぜんぶ置きました！ 「上司に提出」を押そう";color:var(--sub);font-size:.85rem;align-self:center}
+.tcard{padding:6px 8px 6px 12px}
+.tcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;border-radius:8px 0 0 8px;background:var(--oc)}
+.tcard b{display:block;font-size:.88rem}
+.tcard .meta{font-size:.72rem;color:#5d5366}
+.tcard .dep{font-size:.7rem;color:var(--sub);margin-top:1px}
+.tcard .alt{position:absolute;right:6px;top:-9px;background:#7a5cc2;color:#fff;font-size:.62rem;border-radius:999px;padding:0 7px}
+.tcard .new{position:absolute;right:6px;top:-9px;background:var(--ng);color:#fff;font-size:.62rem;border-radius:999px;padding:0 7px}
+h3{font-size:.92rem;margin:14px 0 6px}
+.info{margin-top:8px;font-size:.8rem;color:var(--sub);min-height:2.6em;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.info b{color:var(--ink)}
+.info button{border:1.5px solid var(--line);border-radius:999px;padding:1px 10px;background:#fff;font-size:.78rem;color:var(--ink)}
+.ghost{position:fixed;left:0;top:0;z-index:50;pointer-events:none;opacity:.92;box-shadow:0 8px 18px rgba(60,40,30,.25)}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;background:linear-gradient(transparent,var(--bg) 30%);padding:18px 12px calc(12px + env(safe-area-inset-bottom))}
+.dock .in{max-width:1000px;margin:0 auto;display:flex;gap:8px}
+.dock .big{margin:0;flex:1}
+.dock .sub{background:#fff;border:2px solid var(--line);border-radius:999px;padding:0 14px;font-size:.85rem;white-space:nowrap}
+.toast{position:fixed;left:50%;top:16px;transform:translate(-50%,-20px);background:var(--ink);color:#fff;border-radius:14px;padding:10px 16px;font-size:.88rem;opacity:0;pointer-events:none;transition:.25s;z-index:80;width:max-content;max-width:90vw}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+/* 上司の採点 */
+.modal{position:fixed;inset:0;background:rgba(40,30,45,.45);display:none;align-items:flex-end;justify-content:center;z-index:60}
+.modal.on{display:flex}
+.sheet{background:var(--bg);width:100%;max-width:560px;max-height:94vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:16px 16px calc(18px + env(safe-area-inset-bottom));animation:up .3s ease}
+@media(min-width:700px){.modal{align-items:center}.sheet{border-radius:22px}}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.rhead{display:flex;align-items:center;gap:12px}
+.rhead .face{width:110px;flex:none}
+.rname{font-weight:bold}
+.rlike{font-size:.78rem;color:var(--sub)}
+.stamp{display:none;margin-top:6px;font-weight:900;font-size:1.05rem}
+.stamp.on{display:block;animation:pop .35s ease}
+.stamp i{font-style:normal;display:inline-grid;place-items:center;width:62px;height:62px;border:4px solid currentColor;border-radius:50%;font-size:2rem;transform:rotate(-12deg);margin-right:8px;vertical-align:middle}
+.stamp.S{color:#e0a100}.stamp.A{color:var(--ok)}.stamp.B{color:#3b82c4}.stamp.C{color:var(--ng)}
+@keyframes pop{0%{transform:scale(1.8);opacity:0}100%{transform:scale(1);opacity:1}}
+.bubble{position:relative;margin-top:12px;background:#fff;border:2px solid var(--ink);border-radius:16px;padding:12px 14px;min-height:5.5em;white-space:pre-wrap;font-size:.95rem;line-height:1.75;cursor:pointer}
+.bubble::before{content:"";position:absolute;left:42px;top:-12px;border:10px solid transparent;border-bottom-color:var(--ink);border-top:0}
+.bubble::after{content:"";position:absolute;left:44px;top:-8px;border:8px solid transparent;border-bottom-color:#fff;border-top:0}
+.caret{display:inline-block;width:.5em;height:1em;background:var(--ink);vertical-align:-2px;margin-left:2px;animation:blink .8s steps(1) infinite}
+.caret.off{display:none}
+@keyframes blink{50%{opacity:0}}
+.skip{font-size:.72rem;color:var(--sub);text-align:right;margin-top:3px}
+.scores{margin-top:12px;display:none}
+.scores.on{display:block}
+.srow{display:grid;grid-template-columns:5.2em 1fr 3em;align-items:center;gap:8px;font-size:.84rem;margin:5px 0}
+.srow small{color:var(--sub);font-size:.68rem;display:block;line-height:1}
+.bar{height:12px;border-radius:999px;background:#eee4d6;overflow:hidden}
+.bar i{display:block;height:100%;width:0;border-radius:999px;background:var(--ok);transition:width .6s ease}
+.bar i.mid{background:#f0b429}.bar i.low{background:var(--ng)}
+.srow .pt{text-align:right;font-weight:bold}
+.total{display:flex;justify-content:space-between;align-items:baseline;border-top:2px dashed var(--line);margin-top:8px;padding-top:8px;font-weight:bold}
+.total b{font-size:1.5rem}
+.capnote{margin-top:6px;font-size:.82rem;background:#fff0f0;color:var(--ng);border-radius:10px;padding:4px 10px;font-weight:bold}
+.result{display:none;text-align:center;margin-top:12px;background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:12px}
+.result.on{display:block}
+.result .big2{font-size:1.3rem;font-weight:900}
+.btns{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.btns .big{margin:0}
+.btn2{display:block;text-align:center;border:2px solid var(--line);background:#fff;border-radius:999px;padding:11px;font-weight:bold;text-decoration:none;color:var(--ink)}
+.btnx{background:#111;color:#fff;border-color:#111}
+.face svg{display:block;width:100%;height:auto}
+</style>
+</head>
+<body>
+
+<!-- タイトル -->
+<section id="title" class="screen on">
+  <div class="logo"><small>ロードマップ提出ゲーム</small><h1>その段取り、<br><span>通りますか？</span></h1></div>
+  <p class="lead">タスクを週ごとに並べて、クセの強い上司に提出しよう。</p>
+  <h2>お題をえらぶ</h2>
+  <div id="themeList" class="pick"></div>
+  <h2>提出する上司をえらぶ</h2>
+  <div id="bossList" class="pick bosses"></div>
+  <button id="startBtn" class="big">計画を立てはじめる</button>
+  <details class="how">
+    <summary>あそびかた</summary>
+    <ol>
+      <li>タスクカードを、週ごとの予定表へドラッグして並べます（カードをタップしてから、置きたい週をタップしてもOK）。</li>
+      <li>カードは担当者の行に入ります。左はしが、その作業を始める週です。</li>
+      <li>「← ○○のあと」と書かれたカードは、その作業が終わった次の週から始めます。</li>
+      <li>「どちらか1枚」のカードは、片方だけ置きます。早いけれど高い、安いけれど遅い、など。</li>
+      <li>「上司に提出」で採点。順番・締め切り・詰めこみ・予備日・予算の5つで、評価S〜Cが決まります。</li>
+      <li>Cは差し戻し。コメントをヒントに組み直して、再提出しましょう。</li>
+    </ol>
+  </details>
+</section>
+
+<!-- 計画づくり -->
+<section id="game" class="screen">
+  <div class="gbar">
+    <div class="top"><div><div class="ttl" id="gTheme"></div><div class="brief" id="gBrief"></div></div><button class="back" id="backBtn">お題をかえる</button></div>
+    <div class="stats">
+      <span class="stat">締め切り <b id="gDeadline"></b></span>
+      <span class="stat">予算 <b id="gBudget"></b></span>
+      <span class="stat" id="gCostBox">使う予定 <b id="gCost"></b></span>
+      <span class="stat">提出 <b id="gSubmits">0</b>回</span>
+    </div>
+    <div class="extra" id="gExtra"></div>
+  </div>
+  <div class="bossline"><div class="face" id="gFace"></div><div class="hintbub" id="gHint"></div></div>
+  <div id="boardWrap"><div id="board"></div></div>
+  <div class="info" id="info"></div>
+  <h3>まだ置いていないカード</h3>
+  <div id="tray"></div>
+</section>
+<div class="dock" id="dock" style="display:none"><div class="in"><button class="sub" id="resetBtn">ぜんぶ戻す</button><button class="big" id="submitBtn">上司に提出</button></div></div>
+
+<!-- 上司の採点 -->
+<div class="modal" id="review"><div class="sheet">
+  <div class="rhead"><div class="face" id="rFace"></div><div><div class="rname" id="rName"></div><div class="rlike" id="rLike"></div><div class="stamp" id="rStamp"></div></div></div>
+  <div class="bubble" id="rBubble"><span id="rText"></span><i class="caret" id="rCaret"></i></div>
+  <div class="skip" id="rSkip">タップで早送り</div>
+  <div class="scores" id="rScores"></div>
+  <div class="result" id="rResult"></div>
+  <div class="btns" id="rBtns"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* =========================================================
+   お題（タスクの deps は「この作業が終わってから」の slot 名）
+   同じ slot のカードは「どちらか1枚」。社外の行は並行して進めてOK
+   ========================================================= */
+const THEMES = [
+  {
+    id:'launch', name:'新商品の発売', brief:'新しいお菓子を、12週後に発売する', short:'新商品を12週後に発売',
+    weeks:12, budget:320, owners:['企画','デザイン','販促','社外'], final:'launch',
+    slotNames:{photo:'撮影'},
+    tasks:[
+      {id:'spec',   slot:'spec',   name:'商品の仕様を決める', days:10, owner:'企画',   cost:0,   deps:[]},
+      {id:'sample', slot:'sample', name:'サンプル到着',       days:15, owner:'企画',   cost:40,  deps:['spec']},
+      {id:'pkg',    slot:'pkg',    name:'パッケージデザイン', days:10, owner:'デザイン', cost:30, deps:['spec']},
+      {id:'photoA', slot:'photo',  name:'撮影（自社で）',     days:10, owner:'デザイン', cost:5,  deps:['sample']},
+      {id:'photoB', slot:'photo',  name:'撮影（プロに外注）', days:5,  owner:'社外',   cost:30,  deps:['sample']},
+      {id:'lp',     slot:'lp',     name:'LP制作',             days:10, owner:'デザイン', cost:20, deps:['photo']},
+      {id:'mass',   slot:'mass',   name:'量産・入荷',         days:20, owner:'社外',   cost:150, deps:['pkg']},
+      {id:'pr',     slot:'pr',     name:'プレスリリース',     days:5,  owner:'販促',   cost:10,  deps:['photo']},
+      {id:'ad',     slot:'ad',     name:'広告出稿',           days:5,  owner:'販促',   cost:50,  deps:['lp']},
+      {id:'launch', slot:'launch', name:'発売日',             days:1,  owner:'販促',   cost:0,   deps:['mass','ad','pr']},
+    ],
+    ideas:[
+      {say:'インフルエンサーにも紹介してもらおう', task:{id:'infl', slot:'infl', name:'インフルエンサー紹介', days:5, owner:'販促', cost:15, deps:['sample']}},
+      {say:'お店に置くPOPも作っておこう',         task:{id:'pop',  slot:'pop',  name:'店頭POP制作',         days:5, owner:'デザイン', cost:10, deps:['pkg']}},
+    ],
+  },
+  {
+    id:'sale', name:'年末セール', brief:'ネットショップの年末セールを、9週後に始める', short:'年末セールを9週後に開始',
+    weeks:9, budget:180, owners:['企画','デザイン','物流','社外'], final:'start',
+    slotNames:{ship:'発送の準備'},
+    tasks:[
+      {id:'plan',   slot:'plan',   name:'セールの企画を決める', days:5,  owner:'企画',   cost:0,  deps:[]},
+      {id:'buy',    slot:'buy',    name:'目玉商品の仕入れ',     days:10, owner:'企画',   cost:80, deps:['plan']},
+      {id:'stock',  slot:'stock',  name:'倉庫に入荷',           days:10, owner:'物流',   cost:20, deps:['buy']},
+      {id:'shipA',  slot:'ship',   name:'発送の準備（自社で）', days:10, owner:'物流',   cost:10, deps:['stock']},
+      {id:'shipB',  slot:'ship',   name:'発送の準備（代行に頼む）', days:5, owner:'社外', cost:40, deps:['stock']},
+      {id:'banner', slot:'banner', name:'バナー制作',           days:10, owner:'デザイン', cost:0, deps:['plan']},
+      {id:'page',   slot:'page',   name:'特設ページ制作',       days:10, owner:'デザイン', cost:10, deps:['banner']},
+      {id:'mail',   slot:'mail',   name:'メルマガの予約',       days:3,  owner:'企画',   cost:5,  deps:['page']},
+      {id:'sns',    slot:'sns',    name:'SNS広告',              days:5,  owner:'社外',   cost:40, deps:['page']},
+      {id:'start',  slot:'start',  name:'セール開始',           days:1,  owner:'企画',   cost:0,  deps:['ship','mail','sns']},
+    ],
+    ideas:[
+      {say:'福袋も出そう',               task:{id:'fuku',  slot:'fuku',  name:'福袋の企画',       days:5, owner:'企画', cost:15, deps:['plan']}},
+      {say:'ポイント2倍もやっちゃおう',  task:{id:'point', slot:'point', name:'ポイント2倍の設定', days:3, owner:'デザイン', cost:5, deps:['page']}},
+    ],
+  },
+  {
+    id:'event', name:'イベント出店', brief:'10週後の雑貨イベントに、ブースを出す', short:'10週後のイベントに出店',
+    weeks:10, budget:140, owners:['企画','デザイン','制作','社外'], final:'open',
+    slotNames:{build:'ブース施工'},
+    tasks:[
+      {id:'apply',  slot:'apply',  name:'出店の申しこみ',       days:5,  owner:'企画',   cost:10, deps:[]},
+      {id:'review', slot:'review', name:'主催者の審査',         days:10, owner:'社外',   cost:0,  deps:['apply']},
+      {id:'booth',  slot:'booth',  name:'ブース設計',           days:10, owner:'デザイン', cost:0, deps:['review']},
+      {id:'buildA', slot:'build',  name:'ブース施工（自社で）', days:15, owner:'制作',   cost:20, deps:['booth']},
+      {id:'buildB', slot:'build',  name:'ブース施工（業者に頼む）', days:10, owner:'社外', cost:60, deps:['booth']},
+      {id:'gdes',   slot:'gdes',   name:'グッズのデザイン',     days:10, owner:'デザイン', cost:5, deps:['apply']},
+      {id:'goods',  slot:'goods',  name:'グッズ製作',           days:15, owner:'社外',   cost:50, deps:['gdes']},
+      {id:'flyer',  slot:'flyer',  name:'チラシ印刷',           days:5,  owner:'制作',   cost:10, deps:['gdes']},
+      {id:'staff',  slot:'staff',  name:'当日スタッフの手配',   days:5,  owner:'企画',   cost:15, deps:['review']},
+      {id:'open',   slot:'open',   name:'出店当日',             days:1,  owner:'企画',   cost:0,  deps:['build','goods','flyer','staff']},
+    ],
+    ideas:[
+      {say:'来てくれた人にノベルティも配ろう', task:{id:'nov', slot:'nov', name:'ノベルティの準備', days:5, owner:'制作', cost:15, deps:['gdes']}},
+      {say:'SNSで事前に告知もしよう',          task:{id:'tease', slot:'tease', name:'SNSで事前告知', days:3, owner:'企画', cost:0, deps:['booth']}},
+    ],
+  },
+];
+
+/* =========================================================
+   上司（重み・採点のクセ・セリフの部品）
+   ========================================================= */
+const ITEMS = ['order','deadline','overload','buffer','budget'];
+const ITEM_LABEL = {order:'順番', deadline:'締め切り', overload:'詰めこみ', buffer:'予備日', budget:'予算'};
+const ITEM_DESC  = {order:'順番が守られているか', deadline:'締め切りに間に合うか', overload:'同じ担当者が同じ週に重なっていないか', buffer:'予備日があるか', budget:'予算内か'};
+
+const BOSSES = [
+  {
+    id:'sekkachi', name:'せっかち部長', like:'短い計画が好き。早く終わるほど高評価',
+    hint:'早く終わる計画がいちばん！ 締め切りギリギリはきらいだよ。',
+    w:{order:.25, deadline:.35, overload:.15, buffer:.05, budget:.20},
+    // 締め切り：間に合うだけでなく、早く終わるほど高い
+    deadline:(over, slack) => over > 0 ? Math.max(0, 60 - 30*over) : slack >= 2 ? 100 : slack === 1 ? 90 : 70,
+    buffer: slack => slack < 0 ? 0 : slack >= 1 ? 100 : 70,
+    open:{good:['おっ、速いね！','よし、見たよ。','ほう、なかなか！'], mid:['ざっと見たよ。','うん、まあまあ。','見た見た。'], bad:['ちょっと待って！','うーん、だめだめ。','ああ、もう！']},
+    join:['それと、','あと、'],
+    good:{
+      order:['段取りの順番はばっちり','順番はちゃんと守れてる','流れはきれいだね'],
+      deadline:['スピード感があっていいね','早く終わるのは最高','締め切りより前に片づくのがいい'],
+      overload:['人の割りふりもいい感じ','担当の分け方がうまい','かけもちがなくて回りが速い'],
+      buffer:['余裕も少しあるね','予備もとってあるのか','最後に余白があるのはいい'],
+      budget:['お金の使い方もいい','予算内に収まってる','費用もちゃんと見てるね'],
+    },
+    bad:{
+      order:['順番がめちゃくちゃだよ','手順がひっくり返ってる','前の作業が終わってないのに次に行ってるね'],
+      deadline:['遅い、遅すぎる','もっと早く終われるでしょ','それじゃ間に合わないよ'],
+      overload:['一人に仕事を詰めこみすぎ','同じ人がかけもちしてる','その人、倒れちゃうよ'],
+      buffer:['予備がゼロだと、さすがにこわい','余裕がまったくないね','ギリギリすぎるよ'],
+      budget:['お金を使いすぎ','予算オーバーしてる','その出費はちょっと多いね'],
+    },
+    close:{pass:['よし、これで行こう！','すぐ始めて！','通す！ 急いで動いて！'], fail:['すぐ直して持ってきて！','5分で組み直して！','ほら、もう一回！']},
+    praise:['文句なし、最速の段取りだ！','これだよ、これ！ 時は金なり！','完ぺき。君、仕事が速いね！'],
+  },
+  {
+    id:'shincho', name:'慎重課長', like:'予備日が好き。余裕のない計画は不安',
+    hint:'念のため、最後に予備の週を2週ほどとっておくと安心ですよ。',
+    w:{order:.25, deadline:.15, overload:.20, buffer:.30, budget:.10},
+    buffer: slack => slack < 0 ? 0 : slack >= 2 ? 100 : slack === 1 ? 70 : 15,
+    open:{good:['拝見しました。安心できる計画ですね。','ふむ、よく考えられていますね。','ええ、これなら落ち着いて見られます。'], mid:['拝見しました。','ふむ……。','なるほど、なるほど。'], bad:['うーん、心配ですね……。','これは、ちょっと不安です。','ええと……念のため確認させてください。']},
+    join:['それから、','もうひとつ、'],
+    good:{
+      order:['工程の順番は、きちんと守られています','前後関係も問題ありません','順番の確認もばっちりですね'],
+      deadline:['期日にもきちんと収まっています','締め切りの心配はなさそうです','スケジュールの終わりも問題ありません'],
+      overload:['担当者の負担もよく分散されています','かけもちがないのは安心です','人の配置にも無理がありません'],
+      buffer:['予備日をしっかり取っているのがいいですね','もしもの時の余裕があって安心です','余白の取り方がとても上手です'],
+      budget:['費用も予算内に収まっています','お金の面も安心ですね','予算の見通しも問題ありません'],
+    },
+    bad:{
+      order:['作業の順番が前後しているところがありますね','前の工程を待たずに進めている箇所があります','この順番だと、手戻りが出そうです'],
+      deadline:['締め切りに間に合っていませんね','このままでは期日を過ぎてしまいます','期限の管理が心配です'],
+      overload:['同じ担当者に負担が集中していますね','かけもちになっている週があります','その週は、担当の方が手いっぱいでしょう'],
+      buffer:['予備日が足りないのが気になります','何かあったときの余裕がほしいですね','もしもの遅れに備えられていません'],
+      budget:['費用が予算を超えていますね','予算の面でも、少し心配です','この出費は、承認が通りにくいかもしれません'],
+    },
+    close:{pass:['この計画で進めましょう。','安心して承認できます。','では、これでお願いします。'], fail:['念のため、もう一度見直してもらえますか。','ご確認のうえ、再提出をお願いします。','焦らなくていいので、組み直してみてください。']},
+    praise:['石橋をたたいて渡る、理想的な計画です。','心配な点がひとつもありません。おみごとです。','これなら、何があっても大丈夫ですね。'],
+  },
+  {
+    id:'omoitsuki', name:'思いつき社長', like:'提出すると「やっぱり○○も」と条件を足してくる',
+    hint:'いい計画だったら、ボクもアイデアを足しちゃうかもね！ 余裕があると助かるなぁ。',
+    w:{order:.20, deadline:.20, overload:.20, buffer:.20, budget:.20}, idea:true,
+    open:{good:['いいねぇ、ワクワクする！','おお、これは面白い！','うん、気に入った！'], mid:['ふむふむ、なるほどね。','まあ、悪くないよ。','うーん、どうかなぁ。'], bad:['あれれ？','うーん、ピンとこないなぁ。','おっと、これは困ったぞ。']},
+    join:['あとね、','それから、'],
+    good:{
+      order:['順番の流れが気持ちいいね','段取りの順番はばっちり','ちゃんと順を追ってるね'],
+      deadline:['締め切りにも間に合うね','日にちもちゃんと収まってる','期日もばっちり守れてる'],
+      overload:['みんなに仕事がうまく回ってる','チームの使い方がいいね','かけもちがなくて、のびのびできそう'],
+      buffer:['余裕があるのがいいね、思いつきも入れられる','予備日もあって安心だ','余白があるのはいいことだ'],
+      budget:['お金の使い方もいいね','予算内で収まってるのはえらい','費用もちゃんと考えてるね'],
+    },
+    bad:{
+      order:['順番がひっくり返ってるところがあるね','あれ、先にやることがあるんじゃない？','この順番じゃ、うまくつながらないよ'],
+      deadline:['それだと締め切りに間に合わないよ','締め切りを過ぎちゃってるね','間に合わないのは、さすがにまずいなぁ'],
+      overload:['一人に仕事が集まりすぎだよ','かけもちさせすぎじゃない？','その人、大変そうだなぁ'],
+      buffer:['余裕がないと、新しいことを思いついても入らないよ','ギリギリすぎるなぁ','遊びの部分がないね'],
+      budget:['お金がちょっとかかりすぎかな','予算をこえちゃってるね','財布のひもがゆるすぎるよ'],
+    },
+    close:{pass:['よし、それでいこう！','さっそく始めよう！','いいねぇ、期待してるよ！'], fail:['もう一回考えてきてよ！','うん、また持ってきて！','次はもっとワクワクさせてね！']},
+    praise:['最高だ！ 君に任せてよかった！','いいねぇ、パーフェクトだ！','これはすごい、社内で自慢しちゃおう！'],
+    ideaIntro:['いいねぇ！ ……あ、そうだ、ピンときた！','うんうん、いい感じ。……ところで、ひとつ思いついたんだけど。','おお、なるほどね！ ……あっ、待って待って。'],
+    ideaOutro:['それも入れて、もう一回見せて！','ね、いいでしょ？ 入れたらまた持ってきて！','じゃ、それも入れてよろしく！'],
+  },
+  {
+    id:'oni', name:'数字の鬼', like:'予算に厳しい。1円でもオーバーは許さない',
+    hint:'予算は絶対だ。1万円でもこえたら、ハンコは押さんぞ。',
+    w:{order:.20, deadline:.15, overload:.10, buffer:.10, budget:.45}, budgetFail:true,
+    // 予算：こえたら0点。1割以上残せば満点
+    budget:(cost, budget) => cost > budget ? 0 : cost <= budget*0.9 ? 100 : 85,
+    open:{good:['……数字は合っている。','計算させてもらった。悪くない。','ふん、よく数えたな。'], mid:['電卓をたたいてみた。','数字を見させてもらった。','ふむ、計算した。'], bad:['数字が合わんぞ。','話にならんな。','電卓が泣いているぞ。']},
+    join:['次に、','さらに、'],
+    good:{
+      order:['工程の順序に、ムダがない','順番は正しい。手戻りのコストはゼロだ','前後関係の計算は合っている'],
+      deadline:['期日は守れている','締め切りまでの計算は合っている','納期に問題はない'],
+      overload:['人の配分にムダがない','かけもちなし。残業代もかからんな','人員の使い方は合理的だ'],
+      buffer:['予備も計算に入れてあるな','余裕の見積もりも妥当だ','リスクの分の予備もある'],
+      budget:['予算内に収まっている。よろしい','費用の見積もりは合格だ','お金の使い方に、ムダがない'],
+    },
+    bad:{
+      order:['順番の計算が合っていない','前の工程が終わる前に、次の作業に金と人を使っているな','順序を無視した計画は、手戻りでコストが増えるだけだ'],
+      deadline:['期日を過ぎれば、それだけ損失だ','締め切りに間に合わない計画に、金は出せん','遅れは、そのまま赤字になる'],
+      overload:['一人に作業を重ねるのは、効率が悪い','かけもちは、残業代という見えないコストだ','人の使い方にムダがある'],
+      buffer:['予備がなければ、遅れたときに追加費用がかかる','余裕ゼロは、リスクの見積もり不足だ','予備の週がないのは計算が甘い'],
+      budget:['予算オーバーだ。1円たりとも許さん','予算を超えている。数字は正直だ','この金額では、承認のハンコは押せん'],
+    },
+    close:{pass:['……承認だ。','この数字なら、ハンコを押そう。','よし。予算どおりに進めろ。'], fail:['計算し直してこい。','数字を合わせてから出直せ。','電卓を持って、やり直しだ。']},
+    praise:['……完ぺきな数字だ。言うことはない。','1円のムダもない。見事だ。','この計画、帳簿に飾っておきたいくらいだ。'],
+  },
+];
+
+/* =========================================================
+   採点（ルールだけで計算。同じ並べ方なら、いつも同じ点数）
+   ========================================================= */
+const weeksOf = t => Math.ceil(t.days / 5);
+const DEF = {
+  deadline:(over, slack) => over > 0 ? Math.max(0, 60 - 30*over) : 100,
+  buffer: slack => slack < 0 ? 0 : slack >= 2 ? 100 : slack === 1 ? 80 : 40,
+  budget:(cost, budget) => cost <= budget ? 100 : Math.max(0, Math.round(70 - (cost-budget)/budget*100*5)),
+};
+function placedList(st){
+  return st.theme.tasks.filter(t => st.place[t.id] != null).map(t => {
+    const s = st.place[t.id], L = weeksOf(t); return {t, s, e:s+L-1, name:t.name};
+  });
+}
+// 予算のコメントで名前を出すカード：「どちらか1枚」で高いほうを選んでいればそれ、なければいちばん高いカード
+function costDriver(th, P){
+  const pricey = P.filter(p => { const alts = th.tasks.filter(t => t.slot === p.t.slot); return alts.length > 1 && p.t.cost > Math.min(...alts.map(t => t.cost)); });
+  return (pricey.length ? pricey : P).slice().sort((a,b) => b.t.cost - a.t.cost)[0];
+}
+function evaluate(st, boss){
+  const th = st.theme, P = placedList(st), bySlot = {};
+  P.forEach(p => bySlot[p.t.slot] = p);
+  const R = {};
+  // 1. 順番
+  const viol = [], okEdges = [];
+  P.forEach(b => b.t.deps.forEach(d => { const a = bySlot[d]; if (!a) return; (b.s <= a.e ? viol : okEdges).push({A:a, B:b}); }));
+  viol.sort((x,y) => x.B.s - y.B.s || x.A.e - y.A.e);
+  R.order = {score: Math.max(0, 100 - 30*viol.length), viol, okEdges};
+  // 2. 締め切り
+  const last = P.reduce((m,p) => (!m || p.e > m.e || (p.e === m.e && p.t.slot === th.final)) ? p : m, null);
+  const W = st.weeks, end = last ? last.e : 0, over = end - W, slack = W - end;
+  R.deadline = {score: (boss.deadline || DEF.deadline)(over, slack), last, end, W, over, slack};
+  // 3. 詰めこみ（社外は並行OK）
+  const conf = []; let extraLoad = 0; const load = {};
+  th.owners.filter(o => o !== '社外').forEach(o => {
+    const mine = P.filter(p => p.t.owner === o);
+    load[o] = mine.length;
+    for (let w = 1; w <= st.maxW; w++){
+      const on = mine.filter(p => p.s <= w && w <= p.e);
+      if (on.length > 1){ extraLoad += on.length - 1; conf.push({owner:o, w, tasks:on}); }
+    }
+  });
+  R.overload = {score: Math.max(0, 100 - 25*extraLoad), conf, load};
+  // 4. 予備日（最後の作業から締め切りまでの空き週）
+  R.buffer = {score: (boss.buffer || DEF.buffer)(slack), slack, end, W};
+  // 5. 予算
+  const cost = P.reduce((s,p) => s + p.t.cost, 0);
+  R.budget = {score: (boss.budget || DEF.budget)(cost, st.budget), cost, budget:st.budget,
+              top: costDriver(th, P)};
+  let total = 0; ITEMS.forEach(k => total += R[k].score * boss.w[k]);
+  total = Math.round(total);
+  let grade = total >= 90 ? 'S' : total >= 75 ? 'A' : total >= 60 ? 'B' : 'C';
+  // 点数にかかわらず効く決まり（評価の上限）
+  const rank = 'SABC', cap = (g, why) => { if (rank.indexOf(grade) < rank.indexOf(g)) grade = g; if (grade === g) caps.push(why); };
+  const caps = [];
+  if (R.order.viol.length) cap('B', '順番の決まりが崩れているので、最高B評価まで');
+  if (cost > st.budget) cap(boss.budgetFail ? 'C' : 'A', boss.budgetFail ? '予算をこえているので、差し戻し' : '予算をこえているので、最高A評価まで');
+  if (over > 0) cap('C', '締め切りをこえているので、差し戻し');
+  caps.reverse();
+  return {items:R, total, grade, pass: grade !== 'C', caps: grade === 'C' ? caps.filter(c => c.includes('差し戻し')) : caps};
+}
+
+/* =========================================================
+   コメント（部品の組み合わせ。同じ上司で同じ部品が続かない）
+   ========================================================= */
+const lastPick = {};
+function pick(key, arr){
+  if (arr.length === 1) return arr[0];
+  let i; do { i = Math.floor(Math.random()*arr.length); } while (i === lastPick[key]);
+  lastPick[key] = i; return arr[i];
+}
+const wk = n => `第${n}週`;
+const span = (a, b) => a === b ? `${wk(a)}` : `${wk(a)}〜${wk(b)}`;
+// 具体的な中身：実際に置いたタスク名と週の番号を入れる
+const SPEC = {
+  order:{
+    bad:[
+      r => { const {A,B} = r.viol[0]; return `「${A.name}」が終わる${wk(A.e)}を待たずに、${wk(B.s)}から「${B.name}」が始まっている`; },
+      r => { const {A,B} = r.viol[0]; return `「${B.name}」は${wk(B.s)}スタートだけど、「${A.name}」は${wk(A.e)}まで続いている`; },
+      r => { const {A,B} = r.viol[0]; return `${wk(B.s)}の「${B.name}」の時点で、まだ「${A.name}」（${wk(A.e)}まで）が終わっていない`; },
+    ],
+    more: r => r.viol.length > 1 ? `。ほかにも${r.viol.length-1}か所、順番が逆のところがある` : '',
+    good:[
+      r => { const e = r.okEdges[r.okEdges.length-1]; return e ? `「${e.A.name}」→「${e.B.name}」も、${wk(e.A.e)}→${wk(e.B.s)}ときれいにつながっている` : `順番の決まりは崩れていない`; },
+      r => { const e = r.okEdges[Math.floor(r.okEdges.length/2)]; return e ? `「${e.A.name}」が${wk(e.A.e)}に終わってから、${wk(e.B.s)}に「${e.B.name}」へ進んでいる` : `順番の決まりは崩れていない`; },
+      r => `全部で${r.okEdges.length}本ある「これが終わってから」の決まりが、ひとつも崩れていない`,
+    ],
+  },
+  deadline:{
+    bad:[
+      r => r.over > 0 ? `最後の「${r.last.name}」が${wk(r.end)}で、締め切りの${wk(r.W)}を${r.over}週こえている` : `最後の「${r.last.name}」が締め切りの${wk(r.W)}${r.slack===0?'ちょうど':'の直前'}で、ぎりぎり`,
+      r => r.over > 0 ? `締め切りは${wk(r.W)}なのに、「${r.last.name}」が終わるのは${wk(r.end)}` : `全部終わるのが${wk(r.end)}。もっと前に終われるはず`,
+      r => r.over > 0 ? `${wk(r.W)}が締め切りのところ、全体が終わるのは${wk(r.end)}。${r.over}週の遅れ` : `「${r.last.name}」が${wk(r.end)}。締め切りの${wk(r.W)}近くまで使っている`,
+    ],
+    good:[
+      r => `最後の「${r.last.name}」が${wk(r.end)}で、締め切りの${wk(r.W)}に間に合っている`,
+      r => `全体が${wk(r.end)}に終わって、締め切りの${wk(r.W)}までに収まっている`,
+      r => `${wk(r.end)}には、すべて片づく段取りになっている`,
+    ],
+  },
+  overload:{
+    bad:[
+      r => { const c = r.conf[0]; return `${wk(c.w)}の${c.owner}担当が、「${c.tasks[0].name}」と「${c.tasks[1].name}」をかけもちしている`; },
+      r => { const c = r.conf[0]; return `${c.owner}担当は${wk(c.w)}に「${c.tasks[0].name}」も「${c.tasks[1].name}」も抱えている`; },
+      r => { const c = r.conf[0]; return `「${c.tasks[0].name}」と「${c.tasks[1].name}」が、同じ${c.owner}担当の${wk(c.w)}に重なっている`; },
+    ],
+    more: r => r.conf.length > 1 ? `（重なりは全部で${r.conf.length}週ぶん）` : '',
+    good:[
+      r => { const [o,n] = busiest(r.load); return `${o}担当の${n}つの作業も、週ごとにきれいに分かれている`; },
+      r => { const [o] = busiest(r.load); return `いちばん忙しい${o}担当でも、同じ週に作業が重なっていない`; },
+      r => `どの担当も、1週に1つの作業に集中できる並びになっている`,
+    ],
+  },
+  buffer:{
+    bad:[
+      r => r.slack < 0 ? `締め切りの${wk(r.W)}の時点で、まだ作業が残っている` : r.slack === 0 ? `締め切りの${wk(r.W)}まで、予備の週が1つもない` : `予備は${span(r.end+1, r.W)}の${r.slack}週だけ`,
+      r => r.slack < 0 ? `予備日どころか、${-r.slack}週足りていない` : r.slack === 0 ? `${wk(r.end)}に終わって、${wk(r.W)}が締め切り。余裕ゼロ` : `${wk(r.end)}に終わるので、余裕は${r.slack}週しかない`,
+      r => r.slack < 0 ? `締め切りをこえているので、予備はゼロどころかマイナス` : r.slack === 0 ? `少しでも遅れたら、そのまま締め切りに間に合わなくなる` : `予備が${r.slack}週だと、遅れがひとつ出たらおしまい`,
+    ],
+    good:[
+      r => `${span(r.end+1, r.W)}の${r.slack}週ぶん、予備をとってある`,
+      r => `作業が${wk(r.end)}に終わるので、締め切りまで${r.slack}週の余裕がある`,
+      r => `締め切りの前に、${r.slack}週の予備日が確保されている`,
+    ],
+  },
+  budget:{
+    bad:[
+      r => `合計${r.cost}万円で、予算の${r.budget}万円を${r.cost-r.budget}万円オーバー`,
+      r => `予算${r.budget}万円のところ、${r.cost}万円かかる計画になっている`,
+      r => r.top ? `「${r.top.name}」の${r.top.t.cost}万円も重なって、${r.cost-r.budget}万円の予算オーバー` : `${r.cost-r.budget}万円の予算オーバー`,
+    ],
+    good:[
+      r => `合計${r.cost}万円で、予算${r.budget}万円の内に収まっている`,
+      r => r.budget === r.cost ? `予算${r.budget}万円を、ぴったり使い切る計画になっている` : `予算${r.budget}万円に対して${r.cost}万円。${r.budget-r.cost}万円残っている`,
+      r => r.top ? `いちばん大きい「${r.top.name}」の${r.top.t.cost}万円も含めて、合計${r.cost}万円で予算内` : `合計${r.cost}万円で予算内`,
+    ],
+  },
+};
+function busiest(load){ return Object.entries(load).sort((a,b) => b[1]-a[1])[0] || ['担当', 0]; }
+const GOOD_LINE = 80;   // この点以上なら「良い」
+function buildComment(boss, res){
+  const R = res.items, B = boss.id;
+  const tone = res.grade === 'S' || res.grade === 'A' ? 'good' : res.grade === 'B' ? 'mid' : 'bad';
+  const parts = [pick(B+':open:'+tone, boss.open[tone])];
+  let bad = ITEMS.filter(k => R[k].score < GOOD_LINE).sort((a,b) => R[a].score - R[b].score || boss.w[b] - boss.w[a]);
+  if (R.deadline.over > 0) bad = ['deadline'].concat(bad.filter(k => k !== 'deadline'));   // 締め切りをこえたら、まずそれを言う
+  bad = bad.slice(0, 3);
+  const seg = (k, gb, i) => {
+    const sp = SPEC[k];
+    const text = pick(B+':'+gb+':'+k, boss[gb][k]) + '。' + pick('spec:'+gb+':'+k, sp[gb])(R[k]) + (gb === 'bad' && sp.more ? sp.more(R[k]) : '') + '。';
+    return (i > 0 ? boss.join[(i-1) % boss.join.length] : '') + text;
+  };
+  if (!bad.length){
+    // 全部良い：上司が重視する2項目をほめる
+    ITEMS.slice().sort((a,b) => boss.w[b] - boss.w[a]).slice(0, 2).forEach((k,i) => parts.push(seg(k, 'good', i)));
+    parts.push(pick(B+':praise', boss.praise));
+  } else {
+    bad.forEach((k,i) => parts.push(seg(k, 'bad', i)));
+    parts.push(pick(B+':close:'+(res.pass ? 'pass' : 'fail'), boss.close[res.pass ? 'pass' : 'fail']));
+  }
+  return parts.join('\n');
+}
+
+/* =========================================================
+   上司のイラスト（2頭身・表情つき）
+   ========================================================= */
+const INK = '#3d3346';
+function eyes(mood, y=60){
+  if (mood === 'happy') return `<path d="M39 ${y} q7 -8 14 0 M67 ${y} q7 -8 14 0" stroke="${INK}" stroke-width="3.4" fill="none" stroke-linecap="round"/>`;
+  const dy = mood === 'think' ? -3 : 0, dx = mood === 'think' ? 3 : 0;
+  let s = `<circle cx="${46+dx}" cy="${y+dy}" r="4.6" fill="${INK}"/><circle cx="${74+dx}" cy="${y+dy}" r="4.6" fill="${INK}"/>`
+        + `<circle cx="${47.6+dx}" cy="${y-1.6+dy}" r="1.5" fill="#fff"/><circle cx="${75.6+dx}" cy="${y-1.6+dy}" r="1.5" fill="#fff"/>`;
+  if (mood === 'angry') s += `<path d="M37 ${y-12} L53 ${y-7} M83 ${y-12} L67 ${y-7}" stroke="${INK}" stroke-width="3.4" stroke-linecap="round"/>`;
+  if (mood === 'think') s += `<path d="M66 ${y-13} q8 -4 15 0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  return s;
+}
+function mouth(mood){
+  if (mood === 'happy') return `<path d="M50 73 q10 13 20 0 z" fill="#c4544f" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>`;
+  if (mood === 'angry') return `<path d="M51 80 q9 -7 18 0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  if (mood === 'think') return `<circle cx="64" cy="77" r="3.2" fill="none" stroke="${INK}" stroke-width="2.6"/>`;
+  return `<path d="M52 75 q8 6 16 0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+}
+const cheeks = `<ellipse cx="36" cy="71" rx="6" ry="3.6" fill="#ff9fae" opacity=".75"/><ellipse cx="84" cy="71" rx="6" ry="3.6" fill="#ff9fae" opacity=".75"/>`;
+function moodMark(mood){
+  if (mood === 'angry') return `<g stroke="#e5484d" stroke-width="3.2" stroke-linecap="round" fill="none"><path d="M96 22 q4 4 8 0 M96 30 q4 -4 8 0 M94 24 q4 2 0 6 M106 24 q-4 2 0 6"/></g>`;
+  if (mood === 'think') return `<text x="98" y="30" font-size="20" font-weight="bold" fill="${INK}" font-family="sans-serif">？</text>`;
+  if (mood === 'happy') return `<g fill="#ffcc33" stroke="${INK}" stroke-width="1.5"><path d="M101 18 l3 7 7 1 -5 5 1 7 -6 -3 -6 3 1 -7 -5 -5 7 -1z"/></g>`;
+  return '';
+}
+const head = (skin='#ffe2cc') => `<circle cx="21" cy="64" r="7" fill="${skin}" stroke="${INK}" stroke-width="2.5"/><circle cx="99" cy="64" r="7" fill="${skin}" stroke="${INK}" stroke-width="2.5"/><circle cx="60" cy="60" r="38" fill="${skin}" stroke="${INK}" stroke-width="2.8"/>`;
+const ART = {
+  sekkachi: m => `
+    <rect x="33" y="94" width="54" height="40" rx="18" fill="#3e4a7a" stroke="${INK}" stroke-width="2.8"/>
+    <path d="M52 96 L60 104 L68 96 Z" fill="#fff"/><path d="M58 102 L62 102 L64 124 L60 129 L56 124 Z" fill="#e5484d" stroke="${INK}" stroke-width="1.6"/>
+    <g transform="translate(92 112)"><circle r="11" fill="#fff" stroke="${INK}" stroke-width="2.5"/><rect x="-3" y="-17" width="6" height="5" fill="${INK}"/><path d="M0 0 L0 -7 M0 0 L5 2" stroke="#e5484d" stroke-width="2.2" stroke-linecap="round"/></g>
+    ${head()}
+    <path d="M22 54 L26 28 L36 38 L42 15 L53 31 L61 10 L69 30 L80 15 L85 37 L95 27 L98 54 Q92 38 60 36 Q28 38 22 54 Z" fill="#c8642e" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round"/>
+    ${eyes(m)}${cheeks}${mouth(m)}
+    <path d="M100 40 q5 8 0 11 q-5 -3 0 -11z" fill="#9fd8ff" stroke="${INK}" stroke-width="1.6"/>
+    ${moodMark(m)}`,
+  shincho: m => `
+    <rect x="33" y="94" width="54" height="40" rx="18" fill="#6aa889" stroke="${INK}" stroke-width="2.8"/>
+    <path d="M50 95 L60 108 L70 95 Z" fill="#fff" stroke="${INK}" stroke-width="1.6"/>
+    <g transform="translate(90 108) rotate(10)"><rect x="-10" y="-13" width="20" height="26" rx="3" fill="#f3e2c0" stroke="${INK}" stroke-width="2.3"/><rect x="-5" y="-16" width="10" height="5" rx="1.5" fill="#9aa0b3" stroke="${INK}" stroke-width="1.5"/><path d="M-6 -5 h12 M-6 0 h12 M-6 5 h8" stroke="${INK}" stroke-width="1.4"/></g>
+    ${head()}
+    <path d="M22 60 Q20 20 60 20 Q100 20 98 60 Q94 38 72 32 Q54 42 26 46 Z" fill="#2f3550" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round"/>
+    ${eyes(m)}
+    <g fill="rgba(255,255,255,.35)" stroke="#6b6f86" stroke-width="2.4"><circle cx="46" cy="60" r="10.5"/><circle cx="74" cy="60" r="10.5"/></g><path d="M56.5 59 q3.5 -3 7 0" stroke="#6b6f86" stroke-width="2.2" fill="none"/>
+    ${cheeks}${mouth(m)}${moodMark(m)}`,
+  omoitsuki: m => `
+    <rect x="31" y="94" width="58" height="40" rx="19" fill="#8a5cc2" stroke="${INK}" stroke-width="2.8"/>
+    <path d="M60 101 L46 94 L46 108 Z M60 101 L74 94 L74 108 Z" fill="#e5484d" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle cx="60" cy="101" r="3.6" fill="#e5484d" stroke="${INK}" stroke-width="1.8"/>
+    ${head('#ffe6d2')}
+    <ellipse cx="25" cy="50" rx="8" ry="11" fill="#d9d4e2" stroke="${INK}" stroke-width="2.3"/><ellipse cx="95" cy="50" rx="8" ry="11" fill="#d9d4e2" stroke="${INK}" stroke-width="2.3"/>
+    <path d="M48 26 q12 -6 24 0" stroke="${INK}" stroke-width="2" fill="none" opacity=".35"/>
+    <g transform="translate(60 2)"><path d="M-11 -2 a11 11 0 1 1 22 0 c0 6 -5 8 -5 13 h-12 c0 -5 -5 -7 -5 -13z" fill="#ffe066" stroke="${INK}" stroke-width="2.2"/><rect x="-6" y="11" width="12" height="6" rx="2" fill="#b9b3c4" stroke="${INK}" stroke-width="1.8"/><path d="M-20 -8 l-6 -3 M20 -8 l6 -3 M0 -18 v-6 M-15 -18 l-4 -5 M15 -18 l4 -5" stroke="#f0b429" stroke-width="2.4" stroke-linecap="round"/></g>
+    ${eyes(m)}${cheeks}${mouth(m)}${moodMark(m)}`,
+  oni: m => `
+    <rect x="33" y="94" width="54" height="40" rx="18" fill="#3a3a44" stroke="${INK}" stroke-width="2.8"/>
+    <path d="M51 95 L60 106 L69 95 Z" fill="#fff"/><path d="M58 103 L62 103 L63 122 L60 126 L57 122 Z" fill="#3b82c4" stroke="${INK}" stroke-width="1.5"/>
+    <g transform="translate(92 110) rotate(-8)"><rect x="-11" y="-14" width="22" height="28" rx="4" fill="#c9ccd6" stroke="${INK}" stroke-width="2.3"/><rect x="-7" y="-10" width="14" height="6" rx="1.5" fill="#cfe8c4" stroke="${INK}" stroke-width="1.3"/><g fill="${INK}"><circle cx="-5" cy="1" r="1.6"/><circle cx="0" cy="1" r="1.6"/><circle cx="5" cy="1" r="1.6"/><circle cx="-5" cy="7" r="1.6"/><circle cx="0" cy="7" r="1.6"/><circle cx="5" cy="7" r="1.6"/></g></g>
+    <path d="M36 30 L31 8 L46 24 Z M84 30 L89 8 L74 24 Z" fill="#ffd34d" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>
+    ${head('#ffd6c6')}
+    <path d="M22 56 Q20 22 60 21 Q100 22 98 56 L90 42 L82 50 L74 38 L64 48 L56 37 L46 49 L38 39 L30 50 Z" fill="#33303e" stroke="${INK}" stroke-width="2.6" stroke-linejoin="round"/>
+    ${eyes(m)}
+    <g fill="rgba(255,255,255,.3)" stroke="${INK}" stroke-width="2.4"><rect x="35" y="52" width="22" height="15" rx="3"/><rect x="63" y="52" width="22" height="15" rx="3"/></g><path d="M57 58 h6" stroke="${INK}" stroke-width="2.2"/>
+    ${cheeks}${mouth(m)}${moodMark(m)}`,
+};
+function bossSVG(id, mood='normal'){
+  return `<svg viewBox="0 -14 120 152" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${ART[id](mood)}</svg>`;
+}
+
+/* =========================================================
+   状態と画面
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const OWNER_COLOR = ['#ffcf9e','#a9d6ff','#bfe8b0','#f5c0ea','#d9d2f0'];
+let COLW = 46;
+const LABW = 64;
+let sel = {theme:THEMES[0].id, boss:BOSSES[0].id};
+let st = null;   // いまの挑戦
+
+function clone(o){ return JSON.parse(JSON.stringify(o)); }
+function newGame(){
+  const base = THEMES.find(t => t.id === sel.theme), boss = BOSSES.find(b => b.id === sel.boss);
+  st = {theme:clone(base), boss, place:{}, weeks:base.weeks, budget:base.budget, maxW:base.weeks+4,
+        submits:0, retries:0, idea:null, newIds:[], picked:null, done:false};
+}
+const slotName = (th, slot) => (th.slotNames && th.slotNames[slot]) || (th.tasks.find(t => t.slot === slot) || {}).name || slot;
+const ownerColor = (th, o) => OWNER_COLOR[th.owners.indexOf(o)] || '#eee';
+
+/* ---- タイトル ---- */
+function renderTitle(){
+  $('themeList').innerHTML = THEMES.map(t => `<button class="opt ${t.id===sel.theme?'on':''}" data-theme="${t.id}"><b>${t.name}</b><span>${t.brief}<br>締め切り：第${t.weeks}週／予算${t.budget}万円</span></button>`).join('');
+  $('bossList').innerHTML = BOSSES.map(b => `<button class="opt boss ${b.id===sel.boss?'on':''}" data-boss="${b.id}"><div class="face">${bossSVG(b.id)}</div><div><b>${b.name}</b><span>${b.like}</span></div></button>`).join('');
+}
+$('themeList').addEventListener('click', e => { const b = e.target.closest('[data-theme]'); if (b){ sel.theme = b.dataset.theme; renderTitle(); } });
+$('bossList').addEventListener('click', e => { const b = e.target.closest('[data-boss]'); if (b){ sel.boss = b.dataset.boss; renderTitle(); } });
+$('startBtn').addEventListener('click', () => { newGame(); show('game'); renderGame(); });
+$('backBtn').addEventListener('click', () => { show('title'); renderTitle(); });
+function show(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('on', s.id === id));
+  $('dock').style.display = id === 'game' ? '' : 'none';
+  scrollTo(0, 0);
+}
+
+/* ---- 計画づくり ---- */
+function renderGame(){
+  const th = st.theme;
+  COLW = innerWidth >= 760 ? 58 : 46;
+  $('gTheme').textContent = th.name; $('gBrief').textContent = th.brief;
+  $('gDeadline').textContent = `第${st.weeks}週`; $('gBudget').textContent = `${st.budget}万円`;
+  $('gSubmits').textContent = st.submits;
+  $('gFace').innerHTML = bossSVG(st.boss.id); $('gHint').textContent = `${st.boss.name}「${st.boss.hint}」`;
+  $('gExtra').classList.toggle('on', !!st.idea);
+  if (st.idea) $('gExtra').innerHTML = `💡 社長の追加：<b>${st.idea.label}</b>`;
+  renderBoard(); renderTray(); renderInfo(); renderCost();
+}
+function renderCost(){
+  const cost = placedList(st).reduce((s,p) => s + p.t.cost, 0);
+  $('gCost').textContent = `${cost}万円`;
+  $('gCostBox').classList.toggle('over', cost > st.budget);
+}
+function renderBoard(){
+  const th = st.theme, W = st.weeks, N = st.maxW, trackW = N*COLW;
+  let h = `<div class="row head"><div class="lab" style="width:${LABW}px">担当＼週</div>`;
+  for (let w = 1; w <= N; w++) h += `<div class="wk ${w===W?'dl':''} ${w>W?'late':''}" style="width:${COLW}px">${w}${w===W?'<br>締切':''}</div>`;
+  h += `</div>`;
+  const P = placedList(st);
+  th.owners.forEach(o => {
+    const mine = P.filter(p => p.t.owner === o).sort((a,b) => a.s - b.s);
+    const rows = [];   // 重なるカードは段をずらして見せる
+    mine.forEach(p => { let r = rows.findIndex(end => end < p.s); if (r < 0){ r = rows.length; rows.push(0); } rows[r] = p.e; p.row = r; });
+    const hgt = Math.max(1, rows.length)*38 + 8;
+    h += `<div class="row lane" data-owner="${o}"><div class="lab" style="width:${LABW}px;background:linear-gradient(90deg,${ownerColor(th,o)} 0 5px,var(--paper) 5px)">${o}${o==='社外'?'<small>並行OK</small>':''}</div>`
+       + `<div class="track" data-owner="${o}" style="width:${trackW}px;height:${hgt}px;background-image:repeating-linear-gradient(90deg,transparent 0 ${COLW-1}px,var(--line) ${COLW-1}px ${COLW}px)">`
+       + `<div class="late-zone" style="left:${W*COLW}px;width:${(N-W)*COLW}px"></div><div class="dl-line" style="left:${W*COLW}px"></div>`;
+    mine.forEach(p => {
+      h += `<div class="card bcard ${st.picked===p.t.id?'sel':''}" data-id="${p.t.id}" style="left:${(p.s-1)*COLW+2}px;top:${4+p.row*38}px;width:${weeksOf(p.t)*COLW-4}px;background:${ownerColor(th,o)}"><b>${p.t.name}</b><small>${span(p.s,p.e)}</small></div>`;
+    });
+    h += `</div></div>`;
+  });
+  $('board').innerHTML = h;
+}
+function trayCard(t){
+  const th = st.theme, alts = th.tasks.filter(x => x.slot === t.slot).length > 1;
+  const deps = t.deps.map(d => slotName(th, d)).join('・');
+  return `<div class="card tcard ${st.picked===t.id?'sel':''}" data-id="${t.id}" style="--oc:${ownerColor(th,t.owner)}">`
+    + (st.newIds.includes(t.id) ? `<span class="new">追加</span>` : alts ? `<span class="alt">どちらか1枚</span>` : '')
+    + `<b>${t.name}</b><div class="meta">${t.days}日（${weeksOf(t)}週）・${t.owner}・${t.cost}万円</div>`
+    + `<div class="dep">${deps ? '← '+deps+' のあと' : '最初にできる'}</div></div>`;
+}
+function renderTray(){
+  $('tray').innerHTML = st.theme.tasks.filter(t => st.place[t.id] == null).map(trayCard).join('');
+}
+function renderInfo(){
+  const t = st.theme.tasks.find(x => x.id === st.picked);
+  if (!t){ $('info').innerHTML = 'カードを予定表へドラッグ。カードをタップしてから、置きたい週をタップしてもOK。'; return; }
+  const placed = st.place[t.id] != null, deps = t.deps.map(d => slotName(st.theme, d)).join('・');
+  $('info').innerHTML = `<span><b>${t.name}</b>　${t.days}日・${t.owner}・${t.cost}万円${deps ? '　← '+deps+' のあと' : ''}<br>${placed ? '週をタップで移動できます' : '置きたい週をタップ'}</span>`
+    + (placed ? `<button id="unplace">外す</button>` : '') + `<button id="unpick">選択をやめる</button>`;
+  if (placed) $('unplace').onclick = () => { delete st.place[t.id]; st.picked = null; refresh(); };
+  $('unpick').onclick = () => { st.picked = null; refresh(); };
+}
+function refresh(){ renderBoard(); renderTray(); renderInfo(); renderCost(); }
+function placeTask(id, start){
+  const t = st.theme.tasks.find(x => x.id === id), L = weeksOf(t);
+  st.place[id] = Math.max(1, Math.min(st.maxW - L + 1, start));
+}
+
+/* ---- ドラッグ（指・マウス共通） ---- */
+let drag = null, ghost = null, preview = null, raf = 0;
+document.addEventListener('pointerdown', e => {
+  const el = e.target.closest('.card'); if (!el || !st || e.button > 0) return;
+  e.preventDefault();
+  const r = el.getBoundingClientRect(), id = el.dataset.id, onBoard = el.classList.contains('bcard');
+  drag = {id, el, x0:e.clientX, y0:e.clientY, cx:e.clientX, cy:e.clientY, moved:false, onBoard,
+          offX: onBoard ? e.clientX - r.left : Math.min(COLW*0.5, r.width/2), offY: onBoard ? e.clientY - r.top : 17};
+});
+document.addEventListener('pointermove', e => {
+  if (!drag) return;
+  drag.cx = e.clientX; drag.cy = e.clientY;
+  if (!drag.moved){
+    if (Math.hypot(e.clientX-drag.x0, e.clientY-drag.y0) < 6) return;
+    drag.moved = true; startGhost();
+  }
+  e.preventDefault();
+  moveGhost();
+}, {passive:false});
+document.addEventListener('pointerup', e => {
+  if (!drag) return;
+  const d = drag; drag = null; cancelAnimationFrame(raf);
+  if (!d.moved){ st.picked = st.picked === d.id ? null : d.id; refresh(); return; }
+  const tgt = dropTarget(d);
+  endGhost();
+  if (tgt.type === 'board') placeTask(d.id, tgt.week);
+  else if (d.onBoard) delete st.place[d.id];   // 予定表の外に出したら、トレイへ戻す
+  st.picked = null; refresh();
+});
+document.addEventListener('pointercancel', () => { if (drag){ drag = null; endGhost(); cancelAnimationFrame(raf); } });
+function startGhost(){
+  const t = st.theme.tasks.find(x => x.id === drag.id);
+  ghost = document.createElement('div'); ghost.className = 'card bcard ghost';
+  ghost.style.cssText += `width:${weeksOf(t)*COLW-4}px;background:${ownerColor(st.theme, t.owner)}`;
+  ghost.innerHTML = `<b>${t.name}</b><small>${weeksOf(t)}週</small>`;
+  document.body.appendChild(ghost);
+  if (drag.onBoard) drag.el.style.opacity = '.3';
+  const loop = () => { if (!drag) return; autoScroll(); raf = requestAnimationFrame(loop); }; raf = requestAnimationFrame(loop);
+}
+function moveGhost(){
+  ghost.style.transform = `translate(${drag.cx - drag.offX}px, ${drag.cy - drag.offY}px)`;
+  const tgt = dropTarget(drag);
+  $('tray').classList.toggle('hot', tgt.type !== 'board' && drag.onBoard);
+  if (preview){ preview.remove(); preview = null; }
+  if (tgt.type === 'board'){
+    const t = st.theme.tasks.find(x => x.id === drag.id), L = weeksOf(t);
+    const track = document.querySelector(`.track[data-owner="${t.owner}"]`);
+    preview = document.createElement('div'); preview.className = 'preview';
+    preview.style.cssText = `left:${(tgt.week-1)*COLW+2}px;top:4px;width:${L*COLW-4}px`;
+    track.appendChild(preview);
+  }
+}
+function endGhost(){
+  if (ghost){ ghost.remove(); ghost = null; }
+  if (preview){ preview.remove(); preview = null; }
+  $('tray').classList.remove('hot');
+}
+function dropTarget(d){
+  const wr = $('boardWrap').getBoundingClientRect();
+  const gy = d.cy - d.offY + 17;   // カードのまん中の高さ
+  if (d.cx < wr.left || d.cx > wr.right || gy < wr.top || gy > wr.bottom) return {type:'out'};
+  const tr = document.querySelector('.track').getBoundingClientRect();
+  const t = st.theme.tasks.find(x => x.id === d.id), L = weeksOf(t);
+  const week = Math.max(1, Math.min(st.maxW - L + 1, Math.round((d.cx - d.offX - tr.left) / COLW) + 1));
+  return {type:'board', week};
+}
+function autoScroll(){
+  const wrap = $('boardWrap'), wr = wrap.getBoundingClientRect(), edge = 36;
+  if (drag.cy < wr.top - 40 || drag.cy > wr.bottom + 40) return;
+  const before = wrap.scrollLeft;
+  if (drag.cx < wr.left + LABW + edge) wrap.scrollLeft -= 8;
+  else if (drag.cx > wr.right - edge) wrap.scrollLeft += 8;
+  if (wrap.scrollLeft !== before) moveGhost();
+}
+// カードを選んでから、週をタップして置く
+$('board').addEventListener('click', e => {
+  if (!st.picked || e.target.closest('.card')) return;
+  const track = e.target.closest('.track'); if (!track) return;
+  const r = track.getBoundingClientRect();
+  placeTask(st.picked, Math.floor((e.clientX - r.left) / COLW) + 1);
+  st.picked = null; refresh();
+});
+$('resetBtn').addEventListener('click', () => { if (Object.keys(st.place).length && !confirm('置いたカードを、ぜんぶトレイに戻しますか？')) return; st.place = {}; st.picked = null; refresh(); });
+addEventListener('resize', () => { if (st && $('game').classList.contains('on')){ const c = innerWidth >= 760 ? 58 : 46; if (c !== COLW) renderGame(); } });
+
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2600); }
+
+/* ---- 提出 ---- */
+function checkComplete(){
+  const th = st.theme, slots = [...new Set(th.tasks.map(t => t.slot))];
+  const missing = [], dup = [];
+  slots.forEach(s => { const n = th.tasks.filter(t => t.slot === s && st.place[t.id] != null).length; if (!n) missing.push(slotName(th, s)); if (n > 1) dup.push(slotName(th, s)); });
+  if (dup.length) return `「${dup.join('」「')}」は、どちらか1枚だけ置いてください`;
+  if (missing.length) return `まだ置いていない作業があります：「${missing.slice(0,3).join('」「')}」${missing.length>3?'など':''}`;
+  return '';
+}
+$('submitBtn').addEventListener('click', () => {
+  const err = checkComplete(); if (err) return toast(err);
+  st.picked = null; refresh();
+  if (st.boss.idea && !st.idea) return showIdea();
+  st.submits++; $('gSubmits').textContent = st.submits;
+  showReview(evaluate(st, st.boss));
+});
+
+/* ---- 1文字ずつしゃべる ---- */
+let typing = null;
+function typeText(text){
+  return new Promise(res => {
+    const el = $('rText'); el.textContent = ''; $('rCaret').classList.remove('off'); $('rSkip').style.visibility = 'visible';
+    let i = 0;
+    const finish = () => { el.textContent = text; $('rCaret').classList.add('off'); $('rSkip').style.visibility = 'hidden'; typing = null; res(); };
+    const step = () => {
+      if (!typing) return;
+      if (typing.skip) return finish();
+      i++; el.textContent = text.slice(0, i);
+      if (i >= text.length) return finish();
+      const ch = text[i-1];
+      typing.t = setTimeout(step, '。！？\n'.includes(ch) ? 260 : ch === '、' ? 120 : 34);
+    };
+    typing = {skip:false, t:0, step}; step();
+  });
+}
+$('rBubble').addEventListener('click', () => { if (typing){ typing.skip = true; clearTimeout(typing.t); typing.step(); } });
+
+function openReview(mood){
+  $('review').classList.add('on');
+  $('rFace').innerHTML = bossSVG(st.boss.id, mood);
+  $('rName').textContent = st.boss.name; $('rLike').textContent = st.boss.like;
+  $('rStamp').className = 'stamp'; $('rScores').className = 'scores'; $('rResult').className = 'result'; $('rBtns').innerHTML = '';
+}
+async function showReview(res){
+  openReview('think');
+  await typeText('……');
+  const mood = res.grade === 'S' || res.grade === 'A' ? 'happy' : res.grade === 'B' ? 'normal' : 'angry';
+  $('rFace').innerHTML = bossSVG(st.boss.id, mood);
+  await typeText(buildComment(st.boss, res));
+  // 点数の内訳
+  let h = '';
+  ITEMS.forEach(k => {
+    const s = res.items[k].score;
+    h += `<div class="srow"><div>${ITEM_LABEL[k]}<small>重み ${Math.round(st.boss.w[k]*100)}%</small></div><div class="bar"><i class="${s>=GOOD_LINE?'':s>=50?'mid':'low'}" data-w="${s}"></i></div><div class="pt">${s}</div></div>`;
+  });
+  h += `<div class="total"><span>合計（重みつき）</span><b>${res.total}点</b></div>`;
+  $('rScores').innerHTML = h; $('rScores').classList.add('on');
+  setTimeout(() => document.querySelectorAll('#rScores .bar i').forEach(i => i.style.width = i.dataset.w + '%'), 60);
+  $('rStamp').innerHTML = `<i>${res.grade}</i>${res.pass ? '合格' : '差し戻し'}`; $('rStamp').className = 'stamp on ' + res.grade;
+  if (res.caps.length) $('rScores').insertAdjacentHTML('beforeend', res.caps.map(c => `<div class="capnote">⚠ ${c}</div>`).join(''));
+  if (res.pass){
+    st.done = true;
+    const n = st.retries;
+    const share = `${st.boss.name}から${res.grade}評価をもらった！（再提出${n}回）\nお題：${st.theme.short}\n#その段取り通りますか`;
+    const page = /^https?:/.test(location.href) ? location.href.split(/[?#]/)[0] : '';
+    $('rResult').innerHTML = `<div class="big2">${res.total}点・評価 ${res.grade}</div><div>再提出 ${n}回${n === 0 ? '（一発合格！）' : ''}</div>`;
+    $('rResult').classList.add('on');
+    $('rBtns').innerHTML = `<a class="btn2 btnx" target="_blank" rel="noopener" href="https://x.com/intent/tweet?text=${encodeURIComponent(share)}${page ? '&url='+encodeURIComponent(page) : ''}">𝕏 結果をシェア</a>`
+      + `<button class="big" id="againBtn">別の上司・お題であそぶ</button><button class="btn2" id="keepBtn">この計画をもう少し見る</button>`;
+    $('againBtn').onclick = () => { $('review').classList.remove('on'); show('title'); renderTitle(); };
+    $('keepBtn').onclick = () => $('review').classList.remove('on');
+  } else {
+    st.retries++;
+    $('rBtns').innerHTML = `<button class="big" id="fixBtn">コメントを見ながら組み直す</button>`;
+    $('fixBtn').onclick = () => { $('review').classList.remove('on'); renderGame(); };
+  }
+}
+// 思いつき社長：最初の提出で、条件を1つ足してくる（採点はしない・再提出の回数にも数えない）
+function minPlan(th, weeks){
+  // いちばん早い・いちばん安いを選んだときの、最短の週数と最少の費用
+  const slots = [...new Set(th.tasks.map(t => t.slot))], ef = {};
+  const fin = s => { if (ef[s] != null) return ef[s];
+    ef[s] = Math.min(...th.tasks.filter(t => t.slot === s).map(t => Math.max(0, ...t.deps.map(fin)) + weeksOf(t))); return ef[s]; };
+  const len = Math.max(...slots.map(fin));
+  const cost = slots.reduce((a,s) => a + Math.min(...th.tasks.filter(t => t.slot === s).map(t => t.cost)), 0);
+  return {len, cost};
+}
+// 「どちらか1枚」の組み合わせのうち、いちばん早く終わるもの（同じならいちばん安いもの）
+function fastestCombo(th){
+  const slots = [...new Set(th.tasks.map(t => t.slot))];
+  let best = null;
+  const rec = (i, chosen) => {
+    if (i === slots.length){
+      const ef = {}, fin = s => ef[s] != null ? ef[s] : (ef[s] = Math.max(0, ...chosen[s].deps.map(fin)) + weeksOf(chosen[s]));
+      const len = Math.max(...slots.map(fin)), cost = slots.reduce((a,s) => a + chosen[s].cost, 0);
+      if (!best || len < best.len || (len === best.len && cost < best.cost)) best = {len, cost};
+      return;
+    }
+    th.tasks.filter(t => t.slot === slots[i]).forEach(t => rec(i+1, {...chosen, [slots[i]]:t}));
+  };
+  rec(0, {}); return best;
+}
+function makeIdeas(){
+  const th = st.theme, list = [];
+  th.ideas.forEach(i => { const t = clone(i.task); const th2 = clone(th); th2.tasks.push(t); th2.tasks.find(x => x.slot === th.final).deps.push(t.slot);
+    if (minPlan(th2).len <= st.weeks && minPlan(th2).cost <= st.budget) list.push({label:`「${t.name}」を入れる`, say:i.say, apply:() => { th.tasks.push(t); th.tasks.find(x => x.slot === th.final).deps.push(t.slot); st.newIds.push(t.id); }}); });
+  const m = minPlan(th), f = fastestCombo(th);
+  // 前倒し：いちばん早い組み合わせで1週は予備が残るときだけ。足りないぶんの予算はふやしてくれる
+  if (f.len <= st.weeks - 2){
+    const add = Math.max(0, Math.ceil((f.cost - st.budget) / 10) * 10);
+    const what = th.final === 'launch' ? '発売を1週早めよう' : th.final === 'start' ? 'セールを1週早く始めよう' : '準備を1週早く終わらせよう';
+    list.push({label:`締め切りを第${st.weeks-1}週に前倒し${add ? `（予算は${add}万円ふえて${st.budget+add}万円）` : ''}`,
+               say: what + (add ? `。そのかわり予算を${add}万円ふやすから` : ''), apply:() => { st.weeks -= 1; st.budget += add; }});
+  }
+  const cut = st.budget - Math.max(m.cost + 5, Math.round(st.budget*0.93));
+  if (cut > 0) list.push({label:`予算を${cut}万円へらして${st.budget-cut}万円に`, say:`予算を${cut}万円削ろう`, apply:() => { st.budget -= cut; }});
+  return list;
+}
+async function showIdea(){
+  const ideas = makeIdeas(), idea = ideas[Math.floor(Math.random()*ideas.length)];
+  openReview('happy');
+  const B = st.boss;
+  await typeText(pick(B.id+':ideaIntro', B.ideaIntro) + '\nやっぱり、' + idea.say + '！\n' + pick(B.id+':ideaOutro', B.ideaOutro));
+  idea.apply(); st.idea = idea;
+  $('rResult').innerHTML = `<div>💡 追加の条件：<b>${idea.label}</b></div><div style="font-size:.8rem;color:var(--sub);margin-top:4px">この提出は数に入りません。条件を入れて、もう一度提出しよう。</div>`;
+  $('rResult').classList.add('on');
+  $('rBtns').innerHTML = `<button class="big" id="ideaOk">わかりました（組み直す）</button>`;
+  $('ideaOk').onclick = () => { $('review').classList.remove('on'); renderGame(); };
+}
+
+renderTitle();
+window.__g = {makeIdeas, minPlan, THEMES, BOSSES, evaluate, buildComment, get st(){ return st; }, newGame, placeTask, refresh, renderGame, show, sel, checkComplete};
+</script>
+</body>
+</html>
